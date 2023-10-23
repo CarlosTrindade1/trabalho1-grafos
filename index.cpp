@@ -29,21 +29,24 @@ struct GraphInput {
 };
 
 struct EdgeStruct {
-    int key;
+    int destinyKey;
     int cost;
 };
 
 struct GraphStruct {
     int key;
-    int* EdgeStruct;
+    int indexEdge = 0;
+    EdgeStruct* edges;
 };
 
 class Graph {
     public:
         Graph(GraphInput* graphInput);
+        void printGraph();
 
     private:
         GraphStruct* vector;
+        int vectorLength;
 };
 
 GraphInput* readFile(string fileName);
@@ -53,23 +56,27 @@ int main(int argc, char **argv) {
     
     GraphInput* graphInput = readFile(fileName);
 
-    if (!graphInput) {
-        cout << "Arquivo inválido!" << endl;
-        return 1;
-    }
+    Graph graph = Graph(graphInput);
 
-    cout << graphInput->vertices << endl;
-    cout << graphInput->edges << endl;
+    graph.printGraph();
 
-    cout << "VÉRTICES" << endl;
-    for (int i = 0; i < graphInput->vertices; i++) {
-        cout << graphInput->verticesInput[i].key << " " << graphInput->verticesInput[i].qtdEntranceEdges << " " << graphInput->verticesInput[i].qtdExitEdges << endl;
-    }
+    // if (!graphInput) {
+    //     cout << "Arquivo inválido!" << endl;
+    //     return 1;
+    // }
 
-    cout << "ARESTAS" << endl;
-    for (int i = 0; i < graphInput->edges; i++) {
-        cout << graphInput->edgesInput[i].originVertice << " " << graphInput->edgesInput[i].destinyVertice << " " << graphInput->edgesInput[i].cost << endl;
-    }
+    // cout << graphInput->vertices << endl;
+    // cout << graphInput->edges << endl;
+
+    // cout << "VÉRTICES" << endl;
+    // for (int i = 0; i < graphInput->vertices; i++) {
+    //     cout << graphInput->verticesInput[i].key << " " << graphInput->verticesInput[i].qtdEntranceEdges << " " << graphInput->verticesInput[i].qtdExitEdges << endl;
+    // }
+
+    // cout << "ARESTAS" << endl;
+    // for (int i = 0; i < graphInput->edges; i++) {
+    //     cout << graphInput->edgesInput[i].originVertice << " " << graphInput->edgesInput[i].destinyVertice << " " << graphInput->edgesInput[i].cost << endl;
+    // }
 
     return 0;
 }
@@ -128,3 +135,54 @@ GraphInput* readFile(string fileName) {
 }
 
 // Métodos da classe Graph
+
+/*
+    @function
+    @description: Constrói o grafo na estrutura lista de adjacências a partir das informações
+    de um grafo de entrada
+    @params: GraphInput* graphInput -> ponteiro para uma estruta do tipo 'graphInput'
+    @complexity: 
+*/
+Graph::Graph(GraphInput* graphInput) {
+    // O(V): V = Quantidade de vertices
+
+    vector = new GraphStruct[graphInput->vertices];
+    vectorLength = graphInput->vertices;
+
+    for (int i = 0; i < graphInput->vertices; i++) {
+        vector[i].key = graphInput->verticesInput[i].key;
+        vector[i].edges = new EdgeStruct[graphInput->verticesInput[i].qtdExitEdges];
+    }
+
+    for (int i = 0; i < graphInput->edges; i++) {
+        int originVertice = graphInput->edgesInput[i].originVertice;
+
+        for (int j = 0; j < graphInput->vertices; j++) {
+            if (originVertice == vector[j].key) {
+                vector[j].edges[vector[j].indexEdge].destinyKey = graphInput->edgesInput[i].destinyVertice;
+                vector[j].edges[vector[j].indexEdge].cost = graphInput->edgesInput[i].cost;
+                vector[j].indexEdge++;
+            }
+        }
+    }
+}
+
+/*
+    @function
+    @description:
+    @params:
+    @complexity: 
+*/
+void Graph::printGraph() {
+    for (int i = 0; i < vectorLength; i++) {
+        cout << vector[i].key;
+
+        cout << " -> ";
+
+        for (int j = 0; j < vector[i].indexEdge; j++) {
+            cout << vector[i].edges[j].destinyKey << " " << vector[i].edges[j].cost << "  ";
+        }
+
+        cout << endl;
+    }
+}
