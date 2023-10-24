@@ -6,6 +6,15 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <climits>
+
+/*
+    @function
+    @description: 
+    @params:
+    @return:
+    @complexity: 
+*/
 
 using namespace std;
 
@@ -43,13 +52,13 @@ class Graph {
     public:
         Graph(GraphInput* graphInput);
         void printGraph();
-
-    private:
-        GraphStruct* vector;
         int vectorLength;
+        GraphStruct* vector;
 };
 
 GraphInput* readFile(string fileName);
+void dijkstra(Graph graph, int key, int previous[], int distance[]);
+int min(int distance[], int sizeVector);
 
 int main(int argc, char **argv) {
     string fileName = argv[1];
@@ -60,23 +69,20 @@ int main(int argc, char **argv) {
 
     graph.printGraph();
 
-    // if (!graphInput) {
-    //     cout << "Arquivo inválido!" << endl;
-    //     return 1;
-    // }
+    int previous[graph.vectorLength];
+    int distance[graph.vectorLength];
 
-    // cout << graphInput->vertices << endl;
-    // cout << graphInput->edges << endl;
+    dijkstra(graph, 0, previous, distance);
 
-    // cout << "VÉRTICES" << endl;
-    // for (int i = 0; i < graphInput->vertices; i++) {
-    //     cout << graphInput->verticesInput[i].key << " " << graphInput->verticesInput[i].qtdEntranceEdges << " " << graphInput->verticesInput[i].qtdExitEdges << endl;
-    // }
+    for (int i = 0; i < graph.vectorLength; i++) {
+        cout << previous[i] << " ";
+    }
 
-    // cout << "ARESTAS" << endl;
-    // for (int i = 0; i < graphInput->edges; i++) {
-    //     cout << graphInput->edgesInput[i].originVertice << " " << graphInput->edgesInput[i].destinyVertice << " " << graphInput->edgesInput[i].cost << endl;
-    // }
+    cout << endl;
+
+    for (int i = 0; i < graph.vectorLength; i++) {
+        cout << distance[i] << " ";
+    }
 
     return 0;
 }
@@ -141,7 +147,7 @@ GraphInput* readFile(string fileName) {
     @description: Constrói o grafo na estrutura lista de adjacências a partir das informações
     de um grafo de entrada
     @params: GraphInput* graphInput -> ponteiro para uma estruta do tipo 'graphInput'
-    @complexity: 
+    @complexity: O(V * E)
 */
 Graph::Graph(GraphInput* graphInput) {
     // O(V): V = Quantidade de vertices
@@ -169,9 +175,9 @@ Graph::Graph(GraphInput* graphInput) {
 
 /*
     @function
-    @description:
-    @params:
-    @complexity: 
+    @description: função que realiza a impressão dos vértices e arestas do grafo
+    @params: void
+    @complexity: O(V + A)
 */
 void Graph::printGraph() {
     for (int i = 0; i < vectorLength; i++) {
@@ -186,3 +192,61 @@ void Graph::printGraph() {
         cout << endl;
     }
 }
+
+// Fim dos métodos da classe Graph
+
+/*
+    @function
+    @description: Constrói o grafo na estrutura lista de adjacências a partir das informações
+    de um grafo de entrada
+    @params: GraphInput* graphInput -> ponteiro para uma estruta do tipo 'graphInput'
+    @return: void
+    @complexity: O(V * E)
+*/
+void dijkstra(Graph graph, int key, int previous[], int distance[]) {
+    int sizeProcessing = graph.vectorLength;
+    int processing[sizeProcessing];
+
+    for (int i = 0; i < graph.vectorLength; i++) {
+        distance[graph.vector[i].key] = INT_MAX;
+        previous[graph.vector[i].key] = 0;
+        processing[i] = graph.vector[i].key;
+    }
+
+    distance[key] = 0;
+
+    while (sizeProcessing != 0) {
+        int minKey = min(distance, graph.vectorLength); // u
+        processing[minKey] = -1;
+        sizeProcessing--;
+
+        for (int i = 0; i < graph.vector[minKey].indexEdge; i++) {
+            int neighbor = graph.vector[minKey].edges[i].destinyKey; // v
+            int costNeighbor = graph.vector[minKey].edges[i].cost;
+
+            if (
+                processing[neighbor] != -1 &&
+                distance[minKey] + costNeighbor < distance[neighbor]
+            ) {
+                distance[neighbor] = distance[minKey] + costNeighbor;
+                previous[neighbor] = minKey;
+            }
+        }
+    }
+}
+
+/*
+    @function
+    @description: Retorna o índice (vértice) da menor distância do vetor
+    @params: vetor de inteiros, que representam as distâncias, e tamanho do vetor
+    @return: índice (int)
+    @complexity: O(n)
+*/
+int min(int distance[], int sizeVector) {
+    int min = 0;
+
+    for (int i = 1; i < sizeVector; i++)
+        if (distance[i] < distance[min]) min = i;
+
+    return min;
+} 
