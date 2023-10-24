@@ -80,16 +80,6 @@ int main(int argc, char **argv) {
 
     dijkstra(graph, 8, previous, distance);
 
-    // for (int i = 0; i < graph.vectorLength; i++) {
-    //     cout << previous[i] << " ";
-    // }
-
-    // cout << endl;
-
-    // for (int i = 0; i < graph.vectorLength; i++) {
-    //     cout << distance[i] << " ";
-    // }
-
     return 0;
 }
 
@@ -222,9 +212,11 @@ void dijkstra(Graph graph, int key, int previous[], int distance[]) {
     distance[key] = 0;
 
     while (sizeProcessing != 0) {
+        printArray(distance, graph.vectorLength);
+
         int minKey = min(distance, processing, graph.vectorLength); // u
 
-        // cout << minKey << endl;
+        cout << minKey << endl;
 
         processing[minKey] = -1;
         sizeProcessing--;
@@ -241,8 +233,6 @@ void dijkstra(Graph graph, int key, int previous[], int distance[]) {
                 previous[neighbor] = minKey;
             }
         }
-        
-        printArray(distance, graph.vectorLength);
     }
 
 }
@@ -263,7 +253,14 @@ void printArray(int array[], int size) {
     @complexity: O(n)
 */
 int min(int distance[], int processing[], int sizeVector) {
-    int min = 0;
+    int min;
+
+    for (int i = 0; i < sizeVector; i++) {
+        if (processing[i] != -1) {
+            min = i;
+            break;
+        }
+    }
 
     for (int i = 1; i < sizeVector; i++)
         if (distance[i] < distance[min] && processing[i] != -1) min = i;
