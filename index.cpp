@@ -58,31 +58,37 @@ class Graph {
 
 GraphInput* readFile(string fileName);
 void dijkstra(Graph graph, int key, int previous[], int distance[]);
-int min(int distance[], int sizeVector);
+int min(int distance[], int processing[], int sizeVector);
+void printArray(int array[], int size);
 
 int main(int argc, char **argv) {
     string fileName = argv[1];
     
     GraphInput* graphInput = readFile(fileName);
 
+    if (!graphInput) {
+        cout << "Arquivo inválido!" << endl;
+        return 1;
+    }
+
     Graph graph = Graph(graphInput);
 
-    graph.printGraph();
+    //graph.printGraph();
 
     int previous[graph.vectorLength];
     int distance[graph.vectorLength];
 
-    dijkstra(graph, 0, previous, distance);
+    dijkstra(graph, 8, previous, distance);
 
-    for (int i = 0; i < graph.vectorLength; i++) {
-        cout << previous[i] << " ";
-    }
+    // for (int i = 0; i < graph.vectorLength; i++) {
+    //     cout << previous[i] << " ";
+    // }
 
-    cout << endl;
+    // cout << endl;
 
-    for (int i = 0; i < graph.vectorLength; i++) {
-        cout << distance[i] << " ";
-    }
+    // for (int i = 0; i < graph.vectorLength; i++) {
+    //     cout << distance[i] << " ";
+    // }
 
     return 0;
 }
@@ -209,14 +215,17 @@ void dijkstra(Graph graph, int key, int previous[], int distance[]) {
 
     for (int i = 0; i < graph.vectorLength; i++) {
         distance[graph.vector[i].key] = INT_MAX;
-        previous[graph.vector[i].key] = 0;
+        previous[graph.vector[i].key] = -1;
         processing[i] = graph.vector[i].key;
     }
 
     distance[key] = 0;
 
     while (sizeProcessing != 0) {
-        int minKey = min(distance, graph.vectorLength); // u
+        int minKey = min(distance, processing, graph.vectorLength); // u
+
+        // cout << minKey << endl;
+
         processing[minKey] = -1;
         sizeProcessing--;
 
@@ -232,7 +241,18 @@ void dijkstra(Graph graph, int key, int previous[], int distance[]) {
                 previous[neighbor] = minKey;
             }
         }
+        
+        printArray(distance, graph.vectorLength);
     }
+
+}
+
+void printArray(int array[], int size) {
+    for (int i = 0; i < size; i++) {
+        cout << array[i] << " ";
+    }
+
+    cout << endl;
 }
 
 /*
@@ -242,11 +262,11 @@ void dijkstra(Graph graph, int key, int previous[], int distance[]) {
     @return: índice (int)
     @complexity: O(n)
 */
-int min(int distance[], int sizeVector) {
+int min(int distance[], int processing[], int sizeVector) {
     int min = 0;
 
     for (int i = 1; i < sizeVector; i++)
-        if (distance[i] < distance[min]) min = i;
+        if (distance[i] < distance[min] && processing[i] != -1) min = i;
 
     return min;
 } 
