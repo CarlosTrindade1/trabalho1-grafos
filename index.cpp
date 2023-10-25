@@ -73,12 +73,26 @@ int main(int argc, char **argv) {
 
     Graph graph = Graph(graphInput);
 
-    //graph.printGraph();
+    cout << "GRAFO:" << endl;
+    graph.printGraph();
+    cout << endl;
 
     int previous[graph.vectorLength];
     int distance[graph.vectorLength];
 
     dijkstra(graph, 8, previous, distance);
+
+    cout << "DISTÂNCIAS:" << endl;
+    for (int i = 0; i < graph.vectorLength; i++)
+        cout << distance[i] << " ";
+
+    cout << endl;
+
+    cout << "ANTERIORES:" << endl;
+    for (int i = 0; i < graph.vectorLength; i++)
+        cout << previous[i] << " ";
+
+    cout << endl;
 
     return 0;
 }
@@ -212,17 +226,13 @@ void dijkstra(Graph graph, int key, int previous[], int distance[]) {
     distance[key] = 0;
 
     while (sizeProcessing != 0) {
-        printArray(distance, graph.vectorLength);
-
-        int minKey = min(distance, processing, graph.vectorLength); // u
-
-        cout << minKey << endl;
+        int minKey = min(distance, processing, graph.vectorLength);
 
         processing[minKey] = -1;
         sizeProcessing--;
 
         for (int i = 0; i < graph.vector[minKey].indexEdge; i++) {
-            int neighbor = graph.vector[minKey].edges[i].destinyKey; // v
+            int neighbor = graph.vector[minKey].edges[i].destinyKey;
             int costNeighbor = graph.vector[minKey].edges[i].cost;
 
             if (
