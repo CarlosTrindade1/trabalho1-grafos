@@ -60,15 +60,18 @@ GraphInput* readFile(string fileName);
 void dijkstra(Graph graph, int key, int previous[], int distance[], int length[]);
 int min(int distance[], int length[], int processing[], int sizeVector);
 void update(int minKey, int neighbor, int costNeighbor, int distance[], int previous[], int length[]);
-void output(int length[], int distance[], int previous[], int key, int size);
+void output(int length[], int distance[], int previous[], int size);
 
 int main(int argc, char **argv) {
     string fileName = argv[1];
+    string argumentKey = argv[2];
+
+    int key = stoi(argumentKey);
     
     GraphInput* graphInput = readFile(fileName);
 
     if (!graphInput) {
-        cout << "Arquivo inválido!" << endl;
+        cout << "E" << endl;
         return 1;
     }
 
@@ -78,15 +81,9 @@ int main(int argc, char **argv) {
     int distance[graph.vectorLength];
     int length[graph.vectorLength];
 
-    dijkstra(graph, 8, previous, distance, length);
-    
-    /*cout << "ANTERIOR" << endl;
-    for (int i = 0; i < graph.vectorLength; i++) {
-        cout << previous[i] << " ";
-    }
-    cout << endl;*/
+    dijkstra(graph, key, previous, distance, length);
 
-    output(length, distance, previous, 8, graph.vectorLength);
+    output(length, distance, previous, graph.vectorLength);
 
     return 0;
 }
@@ -131,7 +128,7 @@ GraphInput* readFile(string fileName) {
             graphInput->edgesInput[counter - vertices - 1].destinyVertice = stoi(line.substr(4, 1));
             graphInput->edgesInput[counter - vertices - 1].cost = stoi(line.substr(6, 1));
         } else if (counter == vertices + edges + 1 && line[0] == 'T') {
-            cout << "Arquivo válido!" << endl;
+            // Arquivo válido
         } else {
             return nullptr;
         }
@@ -252,25 +249,43 @@ void dijkstra(Graph graph, int key, int previous[], int distance[], int length[]
     }
 }
 
+/*
+    @function
+    @description: Atualiza a distância de um vizinho de um determinado vértice.
+    @params: número do vértice, número do vizinho, custo do vizinho e vetores onde estão
+    armazenadas essas informações
+    @return: void
+    @complexity: O(1)
+*/
 void update(int minKey, int neighbor, int costNeighbor, int distance[], int previous[], int length[]) {
     distance[neighbor] = distance[minKey] + costNeighbor;
     previous[neighbor] = minKey;
     length[neighbor] = length[minKey] + 1;
 }
 
-void output(int length[], int distance[], int previous[], int key, int size) {
+/*
+    @function
+    @description: Realiza a impressão dos dados no formato passado na descrição do trabalho
+    @params: vetores que contém as informações
+    @return: void
+    @complexity: O(n²)
+*/
+void output(int length[], int distance[], int previous[], int size) {
     for (int i = 0; i < size; i++) {
         int path[length[i] + 1];
+
+        path[length[i]] = i;
+
         int index = i;
 
-        while (index != -1) {
-            path[i] = previous[index];
+        for (int j = length[i] - 1; j >= 0; j--) {
+            path[j] = previous[index];
             index = previous[index];
         }
 
         cout << "P " << i << " " << distance[i] << " " << length[i] << " ";
 
-        for (int j = length[i] + 1; j >= 0; j--) {
+        for (int j = 0; j < length[i] + 1; j++) {
             cout << path[j] << " ";
         }
 
