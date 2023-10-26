@@ -57,9 +57,10 @@ class Graph {
 };
 
 GraphInput* readFile(string fileName);
-void dijkstra(Graph graph, int key, int previous[], int distance[]);
-int min(int distance[], int processing[], int sizeVector);
-void printArray(int array[], int size);
+void dijkstra(Graph graph, int key, int previous[], int distance[], int length[]);
+int min(int distance[], int length[], int processing[], int sizeVector);
+void update(int minKey, int neighbor, int costNeighbor, int distance[], int previous[], int length[]);
+void output(int length[], int distance[], int previous[], int key, int size);
 
 int main(int argc, char **argv) {
     string fileName = argv[1];
@@ -73,26 +74,19 @@ int main(int argc, char **argv) {
 
     Graph graph = Graph(graphInput);
 
-    cout << "GRAFO:" << endl;
-    graph.printGraph();
-    cout << endl;
-
     int previous[graph.vectorLength];
     int distance[graph.vectorLength];
+    int length[graph.vectorLength];
 
-    dijkstra(graph, 8, previous, distance);
-
-    cout << "DISTÂNCIAS:" << endl;
-    for (int i = 0; i < graph.vectorLength; i++)
-        cout << distance[i] << " ";
-
-    cout << endl;
-
-    cout << "ANTERIORES:" << endl;
-    for (int i = 0; i < graph.vectorLength; i++)
+    dijkstra(graph, 8, previous, distance, length);
+    
+    /*cout << "ANTERIOR" << endl;
+    for (int i = 0; i < graph.vectorLength; i++) {
         cout << previous[i] << " ";
+    }
+    cout << endl;*/
 
-    cout << endl;
+    output(length, distance, previous, 8, graph.vectorLength);
 
     return 0;
 }
@@ -213,22 +207,21 @@ void Graph::printGraph() {
     @return: void
     @complexity: O(V * E)
 */
-void dijkstra(Graph graph, int key, int previous[], int distance[]) {
+void dijkstra(Graph graph, int key, int previous[], int distance[], int length[]) {
     int sizeProcessing = graph.vectorLength;
     int processing[sizeProcessing];
-    int teste[sizeProcessing];
 
     for (int i = 0; i < graph.vectorLength; i++) {
         distance[graph.vector[i].key] = INT_MAX;
         previous[graph.vector[i].key] = -1;
         processing[i] = graph.vector[i].key;
-        teste[i] = 0;
+        length[i] = 0;
     }
 
     distance[key] = 0;
 
     while (sizeProcessing != 0) {
-        int minKey = min(distance, processing, graph.vectorLength);
+        int minKey = min(distance, length, processing, graph.vectorLength);
 
         processing[minKey] = -1;
         sizeProcessing--;
@@ -241,22 +234,48 @@ void dijkstra(Graph graph, int key, int previous[], int distance[]) {
                 processing[neighbor] != -1 &&
                 distance[minKey] + costNeighbor < distance[neighbor]
             ) {
-                distance[neighbor] = distance[minKey] + costNeighbor;
-                previous[neighbor] = minKey;
-                teste[neighbor] = teste[minKey] + 1;
+                update(minKey, neighbor, costNeighbor, distance, previous, length);
+            } else if (
+                processing[neighbor] != -1 &&
+                distance[minKey] + costNeighbor == distance[neighbor] &&
+                length[minKey] + 1 < length[neighbor]
+            ) {
+                update(minKey, neighbor, costNeighbor, distance, previous, length);
+            } else if (
+                processing[neighbor] != -1 &&
+                distance[minKey] + costNeighbor == distance[neighbor] &&
+                minKey < previous[neighbor]
+            ) {
+                update(minKey, neighbor, costNeighbor, distance, previous, length);
             }
         }
     }
-    cout << "COMPRIMENTO" << endl;
-    printArray(teste, graph.vectorLength);
 }
 
-void printArray(int array[], int size) {
-    for (int i = 0; i < size; i++) {
-        cout << array[i] << " ";
-    }
+void update(int minKey, int neighbor, int costNeighbor, int distance[], int previous[], int length[]) {
+    distance[neighbor] = distance[minKey] + costNeighbor;
+    previous[neighbor] = minKey;
+    length[neighbor] = length[minKey] + 1;
+}
 
-    cout << endl;
+void output(int length[], int distance[], int previous[], int key, int size) {
+    for (int i = 0; i < size; i++) {
+        int path[length[i] + 1];
+        int index = i;
+
+        while (index != -1) {
+            path[i] = previous[index];
+            index = previous[index];
+        }
+
+        cout << "P " << i << " " << distance[i] << " " << length[i] << " ";
+
+        for (int j = length[i] + 1; j >= 0; j--) {
+            cout << path[j] << " ";
+        }
+
+        cout << endl;
+    }
 }
 
 /*
@@ -266,7 +285,7 @@ void printArray(int array[], int size) {
     @return: índice (int)
     @complexity: O(n)
 */
-int min(int distance[], int processing[], int sizeVector) {
+int min(int distance[], int length[], int processing[], int sizeVector) {
     int min;
 
     for (int i = 0; i < sizeVector; i++) {
@@ -276,8 +295,11 @@ int min(int distance[], int processing[], int sizeVector) {
         }
     }
 
-    for (int i = 1; i < sizeVector; i++)
+    for (int i = 1; i < sizeVector; i++) {
         if (distance[i] < distance[min] && processing[i] != -1) min = i;
+        else if (distance[i] == distance[min] && length[i] < length[min] && processing[i] != -1) min = i;
+        else if (distance[i] == distance[min] && length[i] == length[min] && i < min && processing[i] != -1) min = i;
+    }
 
     return min;
 } 
