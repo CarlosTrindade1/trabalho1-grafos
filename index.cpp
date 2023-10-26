@@ -216,11 +216,13 @@ void Graph::printGraph() {
 void dijkstra(Graph graph, int key, int previous[], int distance[]) {
     int sizeProcessing = graph.vectorLength;
     int processing[sizeProcessing];
+    int teste[sizeProcessing];
 
     for (int i = 0; i < graph.vectorLength; i++) {
         distance[graph.vector[i].key] = INT_MAX;
         previous[graph.vector[i].key] = -1;
         processing[i] = graph.vector[i].key;
+        teste[i] = 0;
     }
 
     distance[key] = 0;
@@ -241,10 +243,12 @@ void dijkstra(Graph graph, int key, int previous[], int distance[]) {
             ) {
                 distance[neighbor] = distance[minKey] + costNeighbor;
                 previous[neighbor] = minKey;
+                teste[neighbor] = teste[minKey] + 1;
             }
         }
     }
-
+    cout << "COMPRIMENTO" << endl;
+    printArray(teste, graph.vectorLength);
 }
 
 void printArray(int array[], int size) {
