@@ -7,6 +7,8 @@
 #include <fstream>
 #include <string>
 #include <climits>
+#include <sstream>
+#include <vector>
 
 /*
     @function
@@ -60,7 +62,7 @@ GraphInput* readFile(string fileName);
 void dijkstra(Graph graph, int key, int previous[], int distance[], int length[]);
 int min(int distance[], int length[], int processing[], int sizeVector);
 void update(int minKey, int neighbor, int costNeighbor, int distance[], int previous[], int length[]);
-void output(int length[], int distance[], int previous[], int size);
+void output(int length[], int distance[], int previous[], int key, int size);
 
 int main(int argc, char **argv) {
     string fileName = argv[1];
@@ -83,7 +85,7 @@ int main(int argc, char **argv) {
 
     dijkstra(graph, key, previous, distance, length);
 
-    output(length, distance, previous, graph.vectorLength);
+    output(length, distance, previous, key, graph.vectorLength);
 
     return 0;
 }
@@ -102,15 +104,24 @@ GraphInput* readFile(string fileName) {
     int counter = 0;
     int vertices = 0;
     int edges = 0;
+    bool isFileValid = false;
 
     txtFile.open(fileName);
 
     while (!txtFile.eof()) {
         getline(txtFile, line);
 
-        if (counter == 0 && line[0] == 'I') {
-            vertices = stoi(line.substr(2, 2));
-            edges = stoi(line.substr(5, 2));
+        istringstream iss(line);
+        vector<string> tokens;
+        string token;
+
+        while (iss >> token) {
+            tokens.push_back(token);
+        }
+
+        if (counter == 0 && tokens[0] == "I") {
+            vertices = stoi(tokens[1]);
+            edges = stoi(tokens[2]);
 
             graphInput->verticesInput = new VerticeInput[vertices];
             graphInput->edgesInput = new EdgesInput[edges];
@@ -118,18 +129,18 @@ GraphInput* readFile(string fileName) {
             graphInput->vertices = vertices;
             graphInput->edges = edges;
 
-        } else if (counter > 0 && counter <= vertices && line[0] == 'N') {
-            graphInput->verticesInput[counter - 1].key = stoi(line.substr(2, 1));
-            graphInput->verticesInput[counter - 1].qtdEntranceEdges = stoi(line.substr(4, 1));
-            graphInput->verticesInput[counter - 1].qtdExitEdges = stoi(line.substr(6, 1));
+        } else if (counter > 0 && counter <= vertices && tokens[0] == "N") {
+            graphInput->verticesInput[counter - 1].key = stoi(tokens[1]);
+            graphInput->verticesInput[counter - 1].qtdEntranceEdges = stoi(tokens[2]);
+            graphInput->verticesInput[counter - 1].qtdExitEdges = stoi(tokens[3]);
 
-        } else if (counter > vertices && counter - vertices <= edges && line[0] == 'E') {
-            graphInput->edgesInput[counter - vertices - 1].originVertice = stoi(line.substr(2, 1));
-            graphInput->edgesInput[counter - vertices - 1].destinyVertice = stoi(line.substr(4, 1));
-            graphInput->edgesInput[counter - vertices - 1].cost = stoi(line.substr(6, 1));
+        } else if (counter > vertices && counter - vertices <= edges && tokens[0] == "E") {
+            graphInput->edgesInput[counter - vertices - 1].originVertice = stoi(tokens[1]);
+            graphInput->edgesInput[counter - vertices - 1].destinyVertice = stoi(tokens[2]);
+            graphInput->edgesInput[counter - vertices - 1].cost = stoi(tokens[3]);
         } else if (counter == vertices + edges + 1 && line[0] == 'T') {
-            // Arquivo válido
-        } else {
+            isFileValid = true;
+        } else if (!isFileValid) {
             return nullptr;
         }
 
@@ -227,6 +238,8 @@ void dijkstra(Graph graph, int key, int previous[], int distance[], int length[]
             int neighbor = graph.vector[minKey].edges[i].destinyKey;
             int costNeighbor = graph.vector[minKey].edges[i].cost;
 
+            if (distance[minKey] == INT_MAX) continue;
+
             if (
                 processing[neighbor] != -1 &&
                 distance[minKey] + costNeighbor < distance[neighbor]
@@ -241,6 +254,7 @@ void dijkstra(Graph graph, int key, int previous[], int distance[], int length[]
             } else if (
                 processing[neighbor] != -1 &&
                 distance[minKey] + costNeighbor == distance[neighbor] &&
+                length[minKey] + 1 == length[neighbor] &&
                 minKey < previous[neighbor]
             ) {
                 update(minKey, neighbor, costNeighbor, distance, previous, length);
@@ -270,8 +284,13 @@ void update(int minKey, int neighbor, int costNeighbor, int distance[], int prev
     @return: void
     @complexity: O(n²)
 */
-void output(int length[], int distance[], int previous[], int size) {
+void output(int length[], int distance[], int previous[], int key, int size) {
     for (int i = 0; i < size; i++) {
+        if (length[i] == 0 && i != key) {
+            cout << "U " << i << endl;
+            continue;
+        }
+
         int path[length[i] + 1];
 
         path[length[i]] = i;
