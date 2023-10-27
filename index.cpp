@@ -10,14 +10,6 @@
 #include <sstream>
 #include <vector>
 
-/*
-    @function
-    @description: 
-    @params:
-    @return:
-    @complexity: 
-*/
-
 using namespace std;
 
 struct VerticeInput {
